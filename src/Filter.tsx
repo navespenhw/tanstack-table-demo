@@ -3,7 +3,7 @@ import {useMemo} from "react";
 import {Select, TextField, UNSAFE_Combobox} from "@navikt/ds-react";
 import {titleCase} from "./util.ts";
 
-function SelectFilter<T>({ column }: { column: Column<T> }) {
+function SelectFilter<T>({column}: { column: Column<T> }) {
   const columnFilterValue = column.getFilterValue();
 
   const facetedValues = column.getFacetedUniqueValues();
@@ -35,12 +35,13 @@ function SelectFilter<T>({ column }: { column: Column<T> }) {
   );
 }
 
-function ComboboxFilter<T>({ column }: { column: Column<T> }) {
+function ComboboxFilter<T>({column}: { column: Column<T> }) {
   const columnFilterValue = column.getFilterValue();
 
   const facetedValues = column.getFacetedUniqueValues();
   const uniqueValues = useMemo(
     () => Array.from(facetedValues.keys()).toSorted(),
+    // Deliberately over-memoize uniqueValues so other filter selections don't affect the available options
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [],
   );
@@ -69,26 +70,25 @@ function ComboboxFilter<T>({ column }: { column: Column<T> }) {
   );
 }
 
-export function Filter<T>({ column }: { column: Column<T> }) {
-  const columnFilterValue = column.getFilterValue();
-  const filterVariant = column.columnDef.meta?.filterVariant;
+function TextFilter<T>({column}: { column: Column<T> }) {
+  return <TextField
+    label={`Filter ${column.columnDef.header}`}
+    hideLabel
+    className="filter"
+    size="small"
+    value={(column.getFilterValue() ?? "") as string}
+    onChange={(e) => column.setFilterValue(e.target.value)}
+  />;
+}
 
-  switch (filterVariant) {
+export function Filter<T>({column}: { column: Column<T> }) {
+  switch (column.columnDef.meta?.filterVariant) {
     case "text":
-      return (
-        <TextField
-          label={`Filter ${column.columnDef.header}`}
-          hideLabel
-          className="filter"
-          size="small"
-          value={(columnFilterValue ?? "") as string}
-          onChange={(e) => column.setFilterValue(e.target.value)}
-        />
-      );
+      return <TextFilter column={column}/>;
     case "select":
-      return <SelectFilter column={column} />
+      return <SelectFilter column={column}/>
     case "select-multi":
-      return <ComboboxFilter column={column} />
+      return <ComboboxFilter column={column}/>
     default:
       return null;
   }

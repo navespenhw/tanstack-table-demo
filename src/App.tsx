@@ -45,7 +45,7 @@ const columnHelper = createColumnHelper<Pet>()
 
 const columns = [
   columnHelper.accessor('type', {
-    header: 'Type',
+    header: 'Species',
     cell: (i) => titleCase(i.getValue()),
     filterFn: includesSome,
     enableGrouping: true,
@@ -59,7 +59,6 @@ const columns = [
     sortUndefined: "last",
     cell: (i) => i.getValue(),
     aggregatedCell: i => i.getValue<number>() > 1 && i.getValue() + " breeds",
-    filterFn: includesSome,
   }),
   columnHelper.accessor('name', {
     header: 'Name',
@@ -71,6 +70,7 @@ const columns = [
   }),
   columnHelper.accessor('age', {
     header: 'Age',
+    cell: (i) => i.getValue(),
     aggregationFn: "mean",
     aggregatedCell: i => "Mean age: " + Math.round(i.getValue() * 100) / 100
   }),
@@ -110,7 +110,7 @@ const columns = [
 function App() {
   const data: Pet[] = useMemo(() => makeData(50000), []);
   const table = useReactTable({
-    data: data,
+    data,
     columns,
     defaultColumn: {
       enableGrouping: false
@@ -133,26 +133,19 @@ function App() {
             {table.getHeaderGroups().map((hg) => (
               <Table.Row key={hg.id}>
                 {hg.headers.map((h) => {
-                  const sortable = h.column.getCanSort();
+                  const text = flexRender(h.column.columnDef.header, h.getContext());
                   return (
-                    <Table.ColumnHeader
-                      key={h.id}
-                      textSize="small"
-                      aria-sort={ariaSort(h.column.getIsSorted())}
-                    >
-                      {h.column.columnDef.meta?.filterVariant && (
-                        <Filter column={h.column}/>
-                      )}
+                    <Table.ColumnHeader key={h.id} textSize="small" aria-sort={ariaSort(h.column.getIsSorted())}>
+                      <Filter column={h.column}/>
                       <HStack justify="space-between" align="center" wrap={false}>
-                        {h.isPlaceholder ? null : sortable ? (
-                          <SortButton column={h.column}>
-                            {flexRender(h.column.columnDef.header, h.getContext())}
-                          </SortButton>
-                        ) : (
-                          flexRender(h.column.columnDef.header, h.getContext())
-                        )}
+                        {h.isPlaceholder
+                          ? null
+                          : h.column.getCanSort()
+                            ? <SortButton column={h.column}>{text}</SortButton>
+                            : text}
                         {h.column.getCanGroup() &&
-                            <Switch size="small" checked={h.column.getIsGrouped()} onChange={h.column.getToggleGroupingHandler()}>Group</Switch>
+                          <Switch size="small" checked={h.column.getIsGrouped()}
+                                  onChange={h.column.getToggleGroupingHandler()}> </Switch>
                         }
                       </HStack>
                     </Table.ColumnHeader>
@@ -164,19 +157,18 @@ function App() {
           <Table.Body>
             {table.getRowModel().rows.map((r) => (
               <Table.Row key={r.id}>
-                {r.getVisibleCells().map((c) => (
-                  <Table.DataCell
-                    key={c.id}
-                    align={c.column.columnDef.meta?.textAlign}
-                    textSize="small"
-                  >
-                    {c.getIsAggregated()
-                      ? flexRender(c.column.columnDef.aggregatedCell ?? c.column.columnDef.cell, c.getContext())
-                      : flexRender(c.column.columnDef.cell, c.getContext())
-                    }
-                    {c.getIsGrouped() && ` (${r.subRows.length})`}
-                  </Table.DataCell>
-                ))}
+                {r.getVisibleCells().map((c) => {
+                  const cd = c.column.columnDef;
+                  return (
+                    <Table.DataCell key={c.id} align={cd.meta?.textAlign} textSize="small">
+                      {c.getIsAggregated()
+                        ? flexRender(cd.aggregatedCell ?? cd.cell, c.getContext())
+                        : flexRender(cd.cell, c.getContext())
+                      }
+                      {c.getIsGrouped() && ` (${r.subRows.length})`}
+                    </Table.DataCell>
+                  );
+                })}
               </Table.Row>
             ))}
           </Table.Body>
@@ -184,19 +176,15 @@ function App() {
         <HStack gap="6" justify="space-between">
           <BodyShort>
             Showing {table.getRowModel().rows.length.toLocaleString()} of{" "}
-            {table.getRowCount()} rows ({data.length - table.getRowCount()}{" "}
-            hidden by filters)
+            {table.getRowCount()} rows
+            {table.getState().grouping.length === 0 &&
+              ` (${data.length - table.getRowCount()} hidden by filters)`
+            }
           </BodyShort>
           <Pagination
             page={table.getState().pagination.pageIndex + 1}
             onPageChange={(page) => table.setPageIndex(page - 1)}
             count={table.getPageCount()}
-            boundaryCount={1}
-            siblingCount={1}
-            srHeading={{
-              tag: "h2",
-              text: "Pagination",
-            }}
           />
         </HStack>
       </VStack>
