@@ -1,0 +1,9 @@
+@import url("@navikt/ds-css");
+
+thead th {
+    vertical-align: bottom;
+}
+
+thead .filter {
+    margin: 0 8px;
+}
