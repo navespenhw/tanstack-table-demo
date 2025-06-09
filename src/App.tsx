@@ -89,7 +89,7 @@ const columns = [
     id: 'actions',
     cell: () => <ActionMenu>
       <ActionMenu.Trigger>
-        <Button variant="tertiary-neutral" icon={<MenuElipsisVerticalCircleIcon/>}/>
+        <Button size="small" variant="tertiary-neutral" icon={<MenuElipsisVerticalCircleIcon/>}/>
       </ActionMenu.Trigger>
       <ActionMenu.Content align='end'>
         <ActionMenu.Group label='Group 1'>
@@ -128,7 +128,7 @@ function App() {
     <Page.Block width="2xl">
       <Heading size="xlarge" spacing>Animal shelter fundraising</Heading>
       <VStack gap="4" paddingBlock="4">
-        <Table>
+        <Table size='small'>
           <Table.Header>
             {table.getHeaderGroups().map((hg) => (
               <Table.Row key={hg.id}>
