@@ -44,7 +44,7 @@ includesSome.autoRemove = (v) => {
 const columnHelper = createColumnHelper<Pet>()
 
 const columns = [
-  columnHelper.accessor('type', {
+  columnHelper.accessor('species', {
     header: 'Species',
     cell: (i) => titleCase(i.getValue()),
     filterFn: includesSome,

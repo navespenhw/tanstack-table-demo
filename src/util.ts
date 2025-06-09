@@ -12,7 +12,7 @@ export function ariaSort(isSorted: false | SortDirection) {
 
 export type Pet = {
   name: string,
-  type: string,
+  species: string,
   breed: string | undefined,
   age: number,
   amountRaised: number | undefined,
@@ -28,7 +28,7 @@ function newPet(): Pet {
   const type = faker.animal.type();
   return {
     name: faker.animal.petName(),
-    type: type,
+    species: type,
     breed: breedGenerator[type]?.(),
     age: faker.number.int({min: 1, max: 23}),
     amountRaised: faker.helpers.maybe(() => faker.number.float({
