@@ -57,8 +57,12 @@ const columns = [
     header: 'Breed',
     aggregationFn: "uniqueCount",
     sortUndefined: "last",
+    filterFn: includesSome,
     cell: (i) => i.getValue(),
     aggregatedCell: i => i.getValue<number>() > 1 && i.getValue() + " breeds",
+    meta: {
+      filterVariant: "select"
+    }
   }),
   columnHelper.accessor('name', {
     header: 'Name',
